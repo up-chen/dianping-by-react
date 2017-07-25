@@ -1,148 +1,78 @@
 
-## 代码分离
+# React 性能优化
 
-之前的demo代码都是在一个文件中，实际开发中不可能是这样子的，因此这里就先把组件的代码给拆分开。我们将使用 es6 的模块管理规范。
+## 简单的 todo-list-demo
 
-containers里面的每一个文件夹都是一个页面page，每个页面里都有若干个subpage和主文件index。
-components里面放的是一些可重用的组件。
+讲 React 性能优化不能光靠嘴说，得有一个 demo 作为依托，做一个简单的 todolist demo，根据源代码来讲解。顺便体验一下 React 最简单的用法。
 
-### page 层
 
-创建`./app/containers/Hello/index.jsx`文件，将之前创建组件代码复制进去
+
+
+## 性能检测
+
+安装 react 性能检测工具 `npm i react-addons-perf --save`，然后在`./app/index.jsx`中
+
+```js
+// 性能测试
+import Perf from 'react-addons-perf'
+if (__DEV__) {
+    window.Perf = Perf
+}
+```
+
+运行程序。在操作之前先运行`Perf.start()`开始检测，然后进行若干操作，运行`Perf.stop`停止检测，然后再运行`Perf.printWasted()`即可打印出浪费性能的组件列表。在项目开发过程中，要经常使用检测工具来看看性能是否正常。
+
+如果性能的影响不是很大，例如每次操作多浪费几毫秒、十几毫秒，个人以为没必要深究，但是如果浪费过多影响了用户体验，就必须去搞定它。
+
+
+
+
+
+## PureRenderMixin 优化
+
+React 最基本的优化方式是使用[PureRenderMixin](http://reactjs.cn/react/docs/pure-render-mixin.html)，安装工具 `npm i react-addons-pure-render-mixin --save`，然后在组件中引用并使用
 
 ```jsx
 import React from 'react'
+import PureRenderMixin from 'react-addons-pure-render-mixin'
 
-class Hello extends React.Component {
-    render() {
-        return (
-             <p>hello world</p>
-        )
-    }
-}
-
-export default Hello
-```
-
-然后`./app/index.jsx`中代码就可以这样写。
-
-```jsx
-import Hello from './containers/Hello';
-
-render(
-    <Hello/>,
-    document.getElementById('root')
-)
-```
-
-注意，代码`import Hello from './containers/Hello';`这里可以写成`./containers/Hello/index.jsx`也可以写成`./containers/Hello/index`
-
-### subpage 层
-
-如果`Hello`组件再稍微复杂一点，那么把代码都放一块也会变得复杂，接下来我们再拆分。
-
-创建`./app/containers/Hello/subpage`目录，然后在其下创建三个文件`Carousel.jsx` `Recommend.jsx` `List.jsx`，分别写入相应的代码（看代码文件即可），然后`./app/containers/Hello/index.js`中即可这样写
-
-```jsx
-import Carousel from './subpage/Carousel'
-import Recommend from './subpage/Recommend'
-import List from './subpage/List'
-
-class Hello extends React.Component {
-    render() {
-        return (
-            <div>
-                <p>hello world</p>
-                <hr/>
-                <Carousel/>
-                <Recommend/>
-                <List/>
-            </div>
-        )
-    }
-}
-```
-
-注意，这里`import`时`.jsx`后缀省略了。
-
-### component 层
-
-以上介绍的是页面和复杂页面的拆分，但那都是页面层级的，即`page`层。这里复杂页面拆分为`subpage`其实没啥特别的，就是把复杂页面的代码拆分一下，会更加符合**开放封闭原则**。而且，只有复杂页面才有必要去拆分，简单页面根本没必要拆分。因此，无论是`page`还是`subpage`它都是页面级别的。
-
-页面的特点是其独特性，一个页面就需要创建一个文件（如果两个页面可以共用一个文件，这是设计不合理，得治）。而页面其中的内容，就不一定是这样子了。例如，现在的APP每个页面最上面都会有个 header ，即可以显示标题，可以返回。每个页面都有，样子差不多，难道我们要为每个页面都做一个？——当然不是。
-
-创建`./app/components/Header/index.jsx`文件，简单写入一个组件的代码（见源码文件），然后在`./app/containers/index.jsx`中引用
-
-```jsx
-import Header from '../../components/Header'
-
-class Hello extends React.Component {
-    render() {
-        return (
-            <div>
-                <Header/>
-                {/* 省略其他内容 */}
-            </div>
-        )
-    }
-}
-```
-
-Hello 页面会用到 Header，以后的其他页面也会用到 Header ，我们把多个页面都可能用到的功能，封装到一个组件中，代码放在`./app/components`下。
-
-
-## 智能组件 & 木偶组件
-
-这是用 React 做系统设计时的两个非常重要的概念。虽然在 React 中，所有的单位都叫做“组件”，但是通过以上例子，我们还是将它们分别放在了`./app/containers`和`./app/components`两个文件夹中。为何要分开呢？
-
-- **智能组件** 在日常开发中，我们也简称**“页面”**。为何说它“智能”，因为它只会做一些很聪明的事儿，脏活累活都不干。它只对数据负责，只需要获取了数据、定义好数据操作的相关函数，然后将这些数据、函数直接传递给具体实现的组件即可。
-- **木偶组件** 这里“木偶”一词用的特别形象，它总是被人拿线牵着。它从智能组件（或页面）那里接受到数据、函数，然后就开始做一些展示工作，它的工作就是把拿到的数据展示给用户，函数操作开放给用户。至于数据内容是什么，函数操作是什么，它不关心。
-
-以上两个如果不是理解的很深刻，待把课程学完再回头看一下这两句话，相信会理解的。
-
-
-
-
-## 生命周期
-
-React 详细的生命周期可参见[这里](http://reactjs.cn/react/docs/component-specs.html)，也可查阅本文档一开始的视频教程。这里我们重点介绍这个项目开发中常用的几个生命周期函数（hook），相信你在接下来的 React 开发中，也会常用这些。
-
-以下声明周期，也没必要每个都写demo来解释，先简单了解一下，后面会根据实际的例子来解释，这样会更加易懂。
-
-- **`getInitialState`**
-
-初始化组件 state 数据，但是在 es6 的语法中，我们可以使用以下书写方式代替
-
-```jsx
-class Hello extends React.Component {
+class List extends React.Component {
     constructor(props, context) {
         super(props, context);
-        // 初始化组件 state 数据
-        this.state = {
-            now: Date.now()
-        }
+        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
     }
+    //...省略其他内容...
 }
 ```
 
-- **`render`**
+React 有一个生命周期 hook 叫做`shouldComponentUpdate`，组件每次更新之前，都要过一遍这个函数，如果这个函数返回`true`则更新，如果返回`false`则不更新。而默认情况下，这个函数会一直返回`true`，就是说，如果有一些无效的改动触发了这个函数，也会导致无效的更新
 
-最常用的hook，返回组件要渲染的模板。
+那么什么是无效的改动？之前说过，组件中的`props`和`state`一旦变化会导致组件重新更新并渲染，但是如果`props`和`state`没有变化也莫名其妙的触发更新了呢（这种情况确实存在）———— 这不就导致了无效渲染吗？
 
-- **`comopentDidMount`**
+这里使用`this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);`的意思是重写组件的`shouldComponentUpdate`函数，在每次更新之前判断`props`和`state`，如果有变化则返回`true`，无变化则返回`false`。
 
-组件第一次加载时渲染完成的事件，一般在此获取网络数据。实际开始项目开发时，会经常用到。
+因此，我们在开发过程中，在每个 React 组件中都尽量使用`PureRenderMixin`
 
-- **`shouldComponentUpdate`**
 
-主要用于性能优化，React 的性能优化也是一个很重要的话题，后面一并讲解。
 
-- **`componentDidUpdate`**
 
-组件更新了之后触发的事件，一般用于清空并更新数据。实际开始项目开发时，会经常用到。
+## Immutable.js 优化
 
-- **`componentWillUnmount`**
+React 的终极优化是使用 [Immutable.js](https://facebook.github.io/immutable-js/) 来处理数据，Immutable 实现了 js 中不可变数据的概念（不了的同学可以去查一下何为“不可变数据”）。
 
-组件在销毁之前触发的事件，一般用户存储一些特殊信息，以及清理`setTimeout`事件等。
+但是也不是所有的场景都适合用它，当我们组件的`props`和`state`中的数据结构层次不深（例如普通的数组、对象等）的时候，就没必要用它。但是当数据结构层次很深（例如`obj.x.y.a.b = 10`这种），你就得考虑使用了。
+
+之所以不轻易使用是，Immutable 定义了一种新的操作数据的语法，如下。和我们平时操作 js 数据完全不一样，而且每个地方都得这么用，学习成本高、易遗漏，风险很高。
+
+```js
+    var map1 = Immutable.Map({a:1, b:2, c:3});
+    var map2 = map1.set('b', 50);
+    map1.get('b'); // 2
+    map2.get('b'); // 50
+```
+
+因此，这里建议优化还是要从设计着手，尽量把数据结构设计的扁平一些，这样既有助于优化系统性能，又减少了开发复杂度和开发成本。
+
+本教程中不会使用 Immutable.js
 
 

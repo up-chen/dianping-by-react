@@ -5,8 +5,15 @@ import { render } from 'react-dom'
 import './static/css/common.less'
 
 import Hello from './containers/Hello/index'
+import TodoList from './containers/TodoList'
 
+// 性能测试
+import Perf from 'react-addons-perf'
+if (__DEV__) {
+    window.Perf = Perf
+}
+console.log(__DEV__)
 render(
-    <Hello />,
+    <TodoList />,
     document.getElementById('root')
 )

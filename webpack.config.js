@@ -68,7 +68,6 @@ module.exports = {
     	//往前端塞一个全局变量 true or false
         new webpack.DefinePlugin({
             //__DEV__: JSON.stringify(JSON.parse((process.env.NODE_ENV == 'dev') || 'false')),
-            __test__: JSON.stringify('test'),
             __DEV__: JSON.stringify('true')
         }),
         new webpack.HotModuleReplacementPlugin(),
@@ -87,8 +86,6 @@ module.exports = {
     ],
     devtool: 'eval-source-map',
     devServer: {
-      //此处是webpack-dev-server的配置
-        contentBase: './public',
         //不跳转，在开发单页应用时非常有用，它依赖于HTML5 history API，如果设置为true，所有的跳转将指向index.html
         historyApiFallback: true,
         inline: true,

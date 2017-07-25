@@ -1,78 +1,80 @@
 
-# React 性能优化
+# react-router 基础知识
 
-## 简单的 todo-list-demo
+## 安装
 
-讲 React 性能优化不能光靠嘴说，得有一个 demo 作为依托，做一个简单的 todolist demo，根据源代码来讲解。顺便体验一下 React 最简单的用法。
+安装 react-router `npm install react-router-dom --save`，完成之后可查看`package.json`的变化。
+
+本章节演示 react-router 的一些基本用法，为了能让大家快速了解。接下来的项目开发中，可能会有另外的用法（应该不多），到时候遇到再讲。当然也欢迎大家去[官网文档](https://github.com/ReactTraining/react-router)自己提前学习。
+
+## 创建页面
+
+创建以下几个页面，用于演示
+
+- `./app/containers/hello.jsx` 所有页面的外壳
+- `./app/containers/Todolist` 主页
+- `./app/containers/paramsexample` 列表页
 
 
 
 
-## 性能检测
+## 配置 router
 
-安装 react 性能检测工具 `npm i react-addons-perf --save`，然后在`./app/index.jsx`中
+创建 `./app/router/routeMap.jsx` 文件，主要代码如下，详细的代码看源文件。
 
-```js
-// 性能测试
-import Perf from 'react-addons-perf'
-if (__DEV__) {
-    window.Perf = Perf
+class RouteMap extends React.Component {    
+    render() {
+        return (
+            <Router>
+            <div>
+                <Route exact path='/' component={Home} />
+                <Route path='/todolist' component={TodoList} />
+                <Route path='/paramsExample' component={ParamsExample} />
+                <Route path='/hello' component={Hello} />
+            </div>
+            </Router>
+        )
+    }
 }
-```
-
-运行程序。在操作之前先运行`Perf.start()`开始检测，然后进行若干操作，运行`Perf.stop`停止检测，然后再运行`Perf.printWasted()`即可打印出浪费性能的组件列表。在项目开发过程中，要经常使用检测工具来看看性能是否正常。
-
-如果性能的影响不是很大，例如每次操作多浪费几毫秒、十几毫秒，个人以为没必要深究，但是如果浪费过多影响了用户体验，就必须去搞定它。
 
 
+## 使用 router
 
-
-
-## PureRenderMixin 优化
-
-React 最基本的优化方式是使用[PureRenderMixin](http://reactjs.cn/react/docs/pure-render-mixin.html)，安装工具 `npm i react-addons-pure-render-mixin --save`，然后在组件中引用并使用
+`./app/index.jsx`中的代码如下，这样就使用了我们刚才定义的`routeMap`组件
 
 ```jsx
 import React from 'react'
-import PureRenderMixin from 'react-addons-pure-render-mixin'
+import { render } from 'react-dom'
+import { hashHistory } from 'react-router'
 
-class List extends React.Component {
-    constructor(props, context) {
-        super(props, context);
-        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);
-    }
-    //...省略其他内容...
-}
-```
+import RouteMap from './router/routeMap'
 
-React 有一个生命周期 hook 叫做`shouldComponentUpdate`，组件每次更新之前，都要过一遍这个函数，如果这个函数返回`true`则更新，如果返回`false`则不更新。而默认情况下，这个函数会一直返回`true`，就是说，如果有一些无效的改动触发了这个函数，也会导致无效的更新
-
-那么什么是无效的改动？之前说过，组件中的`props`和`state`一旦变化会导致组件重新更新并渲染，但是如果`props`和`state`没有变化也莫名其妙的触发更新了呢（这种情况确实存在）———— 这不就导致了无效渲染吗？
-
-这里使用`this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this);`的意思是重写组件的`shouldComponentUpdate`函数，在每次更新之前判断`props`和`state`，如果有变化则返回`true`，无变化则返回`false`。
-
-因此，我们在开发过程中，在每个 React 组件中都尽量使用`PureRenderMixin`
+render(
+    <RouteMap history={hashHistory}/>,
+    document.getElementById('root')
+)
 
 
+## 页面跳转
+
+从给一个页面跳转到另一个页面，有两种方法。第一种是 `<Link>` 跳转，例如在 Home 页面中的代码。（其实这个`<Link>`渲染完了就是html中的`<a>`）
 
 
-## Immutable.js 优化
-
-React 的终极优化是使用 [Immutable.js](https://facebook.github.io/immutable-js/) 来处理数据，Immutable 实现了 js 中不可变数据的概念（不了的同学可以去查一下何为“不可变数据”）。
-
-但是也不是所有的场景都适合用它，当我们组件的`props`和`state`中的数据结构层次不深（例如普通的数组、对象等）的时候，就没必要用它。但是当数据结构层次很深（例如`obj.x.y.a.b = 10`这种），你就得考虑使用了。
-
-之所以不轻易使用是，Immutable 定义了一种新的操作数据的语法，如下。和我们平时操作 js 数据完全不一样，而且每个地方都得这么用，学习成本高、易遗漏，风险很高。
-
-```js
-    var map1 = Immutable.Map({a:1, b:2, c:3});
-    var map2 = map1.set('b', 50);
-    map1.get('b'); // 2
-    map2.get('b'); // 50
-```
-
-因此，这里建议优化还是要从设计着手，尽量把数据结构设计的扁平一些，这样既有助于优化系统性能，又减少了开发复杂度和开发成本。
-
-本教程中不会使用 Immutable.js
+另一个方法是使用 js 跳转
+history.push('pathname')
 
 
+## 获取参数
+this.props.match.params
+
+## 高级 & 进阶
+
+使用到了 router 的项目，其规模不会太小，代码量也不会太少。但是如果项目规模非常非常大的情况下，就会带来各种性能问题，其中给一个就是——视屏时间。
+
+就像我们这次的demo，如何让`/`路由（即首页）加载的更快？抛开代码效率问题，其中一个解决方案就是先不要加载其他页面的代码，**即首页需要哪些代码我就先加载、执行哪些，不需要的就先别加载**。
+
+反观我们现在的做法，页面一出来，不管暂时有用没用的代码，都统统加载下来了。如果项目规模很大、代码行数很多的时候，就不行了。
+
+针对大型项目的**静态资源懒加载**问题，react-router 也给出了解决方案 —— [huge-apps](https://github.com/ReactTraining/react-router/tree/master/examples/huge-apps)，它将 react-router 本身和 webpack 的 `require.ensure` 结合起来，就解决了这一问题。
+
+不过——最后——我们还是不用这种方式——因为我们的项目还没有到那种规模。任何收获都要付出相应的代价，设计越复杂风险就越大，因此我推崇精简设计。至于这个“静态资源懒加载”，大家看一下刚才的源码就能明白了。

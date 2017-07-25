@@ -12,7 +12,7 @@ module.exports = {
   },
   output: {
     path: __dirname + "/build",
-    filename: "/js/[name].[chunkhash:8].js"
+    filename: "js/[name].[chunkhash:8].js"
   },
 
   resolve:{
@@ -100,7 +100,7 @@ module.exports = {
   plugins: [
     // webpack 内置的 banner-plugin
     new webpack.BannerPlugin({
-        baner: "Copyright by wangfupeng1988@github.com."
+        banner: "Copyright by wangfupeng1988@github.com."
     }),
 
     // html 模板插件
@@ -124,13 +124,13 @@ module.exports = {
     
     // 分离CSS和JS文件
     new ExtractTextPlugin({
-        filename: '/css/[name].[chunkhash:8].css'
+        filename: 'css/[name].[chunkhash:8].css'
     }), 
     
     // 提供公共代码
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
-      filename: '/js/[name].[chunkhash:8].js'
+      filename: 'js/[name].[chunkhash:8].js'
     }),
 
     // 可在业务 js 代码中使用 __DEV__ 判断是否是dev模式（dev模式下可以提示错误、测试报告等, production模式不提示）

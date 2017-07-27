@@ -1,1 +1,3 @@
 # dianping-by-react
+这次仿照Redux的官网做了一个TodoList的demo
+放在最后containers的App.jsx中

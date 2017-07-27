@@ -1,126 +1,154 @@
-Redux
-为什么需要redux？
-通俗的将redux就是一个state管理器。在react应用中，react仅仅是一个view层，光有界面不是，还要有数据。react通过props，state传递数据。但是 数据通信之间的问题：
-1，祖父组件到孙子组件。
-这个看上去只是父到子的衍生,但是祖祖祖父到孙子组件呢。
+# fetch 获取/提交数据，以及开发环境下的数据 Mock
 
-2，子到父。下面是一种方案：父给子传递一个函数，子在只要调用这个函数，父就能得到相关的数据。但是孙子到祖祖祖父呢。。
+在 jQuery 开发时代，jQuery 已经为我们封装了非常优雅的 ajax 函数，并且针对各个浏览器都做了很好的兼容，非常棒。但是如果你用 React vue 或者 angular 去开发 webapp 时候，你还会再为了一个 ajax 去集成 jQuery 吗？这是一个问题。
 
-3，非父子关系：基本可以叫做是兄弟关系，以网页为例，总归有一个共同的祖先<body>，但是有可能是非常非常远的兄弟。这个怎么处理。
+另外一个问题，JavaScript 中的 ajax 很早之前就有一个诟病————复杂业务下的 callback 嵌套的问题。如果你对此了解不深刻，建议你去查一下“JavaScript promise”相关的资料。promise 正是 js 中解决这一问题的钥匙，并且作为标准在 ES6 中发布，接下来要介绍的 fetch 就用到了最新的 promise 
 
-对于上面的2，3两点,用react本事的机制，写出来都很别扭，特别是第3点。两个不相关的地方，要数据通信，最简单就是一个全局变量。当然光有全局变量还不行，你改了全局变量，其他所有对这个变量感兴趣React组件的都要被通知到,这样才能相应改变界面。
+**[fetch](https://github.com/github/fetch)**就是一种可代替 ajax 获取/提交数据的技术，有些高级浏览器已经可以`window.fetch`使用了。相比于使用 jQuery.ajax 它轻量（只做这一件事），而且它原生支持 promise ，更加符合现在编程习惯。
 
-如果你的应用有以下场景，可以考虑使用 Redux 
+## 安装
 
-某个组件的状态，需要共享
-某个状态需要在任何地方都可以拿到
-一个组件需要改变全局状态
-一个组件需要改变另一个组件的状态
+根据文档提示，用 npm 安装的话，执行`npm install whatwg-fetch --save`即可安装。为了兼容老版本浏览器，还需要安装`npm install es6-promise --save`。安装完成之后，注意看一下`package.json`中的变化。
 
-Redux架构
+## 基本使用
 
+### get 的基本使用
 
-redux把整个react应用的状态state提取出来，存入一个store中。这个store是唯一的，state是只读的。
-创建store。调用redux的createStore（reducers，[initialsate]）。第二个参数是可选的, 用于设置 state 初始状态
+参见`./app/fetch/test.js`源码，首先要引入依赖的插件
 
-react会根据state来渲染页面，这一点很好理解。就是说，state变化，页面也会跟着变化。那怎么让页面变化呢？
+```js
+import 'whatwg-fetch'
+import 'es6-promise'
+```
 
-通常页面的变化是跟用户的操作有关。redux把用户的操作定义为一个个action。action是一个对象（异步action是一个函数），携带着操作的一些信息。然后store根据action和之前的state来更新状态。想让store知道action，只有store.dispatch（action）方法实现。
+然后这样就可以发起一个 get 请求。这里的`fetch`是引用了插件之后即可用的方法，使用非常简单。方法的第一个参数是 url 第二个参数是配置信息。
 
-store怎样根据action返回一个什么样的state呢？答案是reducers。reducers指定了action改变state的一些规则。store.dispatch（）函数会自动调用reducers函数
+```js
+    var result = fetch('/api/1', {
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json, text/plain, */*'
+        }
+    });
+```
 
-store的state更新之后，怎样通知react知道state更新了呢。通过store.subscribe(listener)注册监听器。每当 dispatch action 的时候就会执行，state 树中的一部分可能已经变化。你可以在回调函数里调用 getState() 来拿到当前 state。然后调用组件的setState
-返回值
-(Function): 一个可以解绑变化监听器的函数。调用这个函数就实现解绑
+以上代码的配置中，`credentials: 'include'`表示跨域请求是可以带cookie（fetch 跨域请求时默认不会带 cookie，需要时得手动指定 credentials: 'include'。这和 XHR 的 withCredentials 一样），`headers`可以设置 http 请求的头部信息。
 
-基本的流程就是这样子。redux维持了一个state的对象来维持整个应用的状态。实现了状态之间的共享和数据通信。
+接着说。
 
-Redux有三大原则
-单一数据源
-整个应用的 state 被储存在一棵 object tree 中，并且这个 object tree 只存在于唯一一个 store 中。
+fetch 方法请求数据，返回的是一个 Promise 对象，接下来我们就可以这样用了——完全使用Promise的语法结构。
 
-State 是只读的
-唯一改变 state 的方法就是触发 action，action 是一个用于描述已发生事件的普通对象。
+```js
+    result.then(res => {
+        return res.text()
+    }).then(text => {
+        console.log(text)
+    })
+```
 
-使用纯函数来执行修改
-为了描述 action 如何改变 state tree ，你需要编写 reducers。
+或者这样用
 
-Action
-Action 是把数据从应用（这里之所以不叫 view 是因为这些数据有可能是服务器响应，用户输入或其它非 view 的数据 ）传到 store 的有效载荷。它是 store 数据的唯一来源。一般来说你会通过 
-我们约定，action 内必须使用一个字符串类型的 type 字段来表示将要执行的动作。多数情况下，type 会被定义成字符串常量。
-通常设计一个Action的生成函数
+```js
+    result.then(res => {
+        return res.json()
+    }).then(json => {
+        console.log(json)
+    })
+```
 
-Reducers
-处理 Reducer 关系时的注意事项
-开发复杂的应用时，不可避免会有一些数据相互引用。建议你尽可能地把 state 范式化，不存在嵌套。把所有数据放到一个对象里，每个数据以 ID 为主键，不同实体或列表间通过 ID 相互引用数据。把应用的 state 想像成数据库。例如，实际开发中，在 state 里同时存放 todosById: { id -> todo } 和 todos: array<id> 是比较好的方式。
-
-reducer 就是一个纯函数，接收旧的 state 和 action，返回新的 state。
-(previousState, action) => newState
-
-注意事项：
-1，不要修改 state。 使用 Object.assign() 新建了一个副本，或使用 { ...state, ...newState } 达到相同的目的。
-
-2，在 default 情况下返回旧的 state。遇到未知的 action 时，一定要返回旧的 state。
-
-拆分 Reducer
-import { combineReducers } from 'redux';
-const todoApp = combineReducers({
-  visibilityFilter,
-  todos
-})
-
-Store 
-store有以下职责：
-维持应用的 state；
-提供 getState() 方法获取 state；
-提供 dispatch(action) 方法更新 state；
-通过 subscribe(listener) 注册监听器;
-通过 subscribe(listener) 返回的函数注销监听器。
-再次强调一下 Redux 应用只有一个单一的 store。当需要拆分数据处理逻辑时，你应该使用 reducer 组合而不是创建多个 store。
+注意，以上两个用法中，只有`res.text()`和`res.json()`这里不一样————这两个方法就是将返回的 Response 数据转换成字符串或者JSON格式，这也是 js 中常用的两种格式。
 
 
+### post 的基本使用
+
+参见`./app/fetch/test.js`源码，首先要引入依赖的插件
+
+```js
+import 'whatwg-fetch'
+import 'es6-promise'
+```
+
+然后用 fetch 发起一个 post 请求（有`method: 'POST'`），第一个参数是 url，第二个参数是配置信息。注意下面配置信息中的`headers`和`body`的格式。
+
+```js
+    var result = fetch('/api/post', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        // 注意 post 时候参数的形式
+        body: "a=100&b=200"
+    });
+```
+
+fetch 提交数据之后，返回的结果也是一个 Promise 对象，跟 get 方法一样，因此处理方式也一样，上面刚描述了，因此不再赘述。
 
 
+## 抽象`get`和`post`
+
+如果每次获取数据，都向上面一样写好多代码，就太冗余了，我们这里将 get 和 post 两个方法单独抽象出来。参见`./app/fetch/get.js`和`./app/fetch/post.js`的源码。
+
+需要注意的是，`post.js`中，将参数做了处理。因为上面的代码中提到，`body: "a=100&b=200"`这种参数格式是有要求的，而我们平时在 js 中使用最多的是 JSON 格式的数据，因此需要转换一下，让它更加易用。
+
+这两个方法抽象之后，接下来我们再用，就变得相当简单了。参见 `./app/fetch/data.js`
+
+```js
+    // '/api/1' 获取字符串
+    var result = get('/api/1')
+
+    result.then(res => {
+        return res.text()
+    }).then(text => {
+        console.log(text)
+    })
+```
 
 
+## 数据 Mock
 
+在目前互联网行业 web 产品开发中，前后端大部分都是分离开发的，前端开发过程中无法实时得到后端的数据。这种情况下，一般会使用三种方式：
 
+- **模拟静态数据**：即按照既定的数据格式，自己提供一些静态的JSON数据，用相关工具（如[fis3](http://fis.baidu.com/fis3/docs/node-mock.html)）做接口来获取这些数据。该形式使用不比较简单的、只用 get 方法的场景，该项目不适用。
+- **模拟动态接口**：即自己用一个 web 框架，按照既定的接口和数据结构的要求，自己模拟后端接口的功能，让前端项目能顺利跑起来。该方式适用于新开发的项目，后端和前端同时开发，适用于该教程的项目。
+- **转发线上接口**：项目开发中，所有的接口直接用代理获取线上的数据，post 的数据也都直接提交到线上。该方式适用于成熟项目中，而该项目是新开发的，没有线上接口，不适用。
 
-搭配react
-区分容器类组件和UI组件
+最后强调一下，该教程是一个前端教程，面向的是前端工程师，后端的开发和处理交给后端工程师来做。后端的业务处理和开发过程，不在本教程的讲解范围之内。
 
-    展示组件    容器组件
-作用  描述如何展现（骨架、样式）   描述如何运行（数据获取、状态更新）
-直接使用 Redux  否   是
-数据来源    props   监听 Redux state
-数据修改    从 props 调用回调函数  向 Redux 派发 actions
-调用方式    手动  通常由 React Redux 生成
-可以简单的说，用容器组件渲染展示组件
+### 安装
 
-容器组件
-技术上讲，容器组件就是使用 store.subscribe() 从 Redux state 树中读取部分数据，并通过 props 来把这些数据提供给要渲染的组件。你可以手工来开发容器组件，但建议使用 React Redux 库的 connect() 方法来生成，这个方法做了性能优化来避免很多不必要的重复渲染。 
-const VisibleTodoList = connect(
-  mapStateToProps,
-  mapDispatchToProps)(TodoList)
+这里我们使用express框架
 
-mapStateToProps()
-mapStateToProps是一个函数。它的作用就是像它的名字那样，建立一个从（外部的）state对象到（UI 组件的）props对象的映射关系。
-mapStateToProps是一个函数，它接受state作为参数，返回一个对象。还可以使用第二个参数，代表容器组件的props对象。
+### 模拟接口
 
-mapDispatchToProps()
-mapDispatchToProps是connect函数的第二个参数，用来建立 UI 组件的参数到store.dispatch方法的映射。会得到dispatch和ownProps（容器组件的props对象）两个参数。 
+我们将模拟接口的代码都写在`./mock`目录下，接口文件是`./mock/server.js`（目前只有这一个文件，真正开发项目时，应该会分不同模块）。
 
+然后在`./package.json`中增加如下代码，然后执行`npm run mock`即可启动模拟的接口服务。
 
-<Provider> 组件
-connect方法生成容器组件以后，需要让容器组件拿到state对象，才能生成 UI 组件的参数。render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
-  document.getElementById('root')
-)
+```
+  "scripts": {
+    "mock": "node ./mock/server.js",
+  },
+```
 
-异步Action 和 Middleware
+启动之后，随便找一个 get 的接口，访问以下，例如`http://localhost:3000/api/1`
 
+### 使用 webpack-dev-server 的代理
 
+到这里你可能会有一个疑问————koa 接口的端口是`3000`，而我们项目的接口是`8080`，这样不就跨域了吗？————如果默认情况下，肯定是跨域了。此时就需要 webpack-dev-server 做一个代理的转发。配置代码在`./webpack.config.js`中
 
+```js
+    devServer: {
+        proxy: {
+          // 凡是 `/api` 开头的 http 请求，都会被代理到 localhost:3000 上，由 koa 提供 mock 数据。
+          // koa 代码在 ./mock 目录中，启动命令为 npm run mock
+          '/api': {
+            target: 'http://localhost:3000',
+            secure: false
+          }
+        },
+        // ...省略若干代码...
+    }
+```
 

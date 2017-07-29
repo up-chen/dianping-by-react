@@ -10,28 +10,23 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(cookieParser())
 
-app.get('/', function(req, res){
-	res.send('Hello Express')
+var HomeAdData = require('./home/ad.js')
+app.get('/api/homead', function(req, res){
+	res.json(HomeAdData)
 })
 
-app.get('/api', function(req, res){
-	res.send('test data')
+var HomeListData = require('./home/list.js')
+app.get('/api/homelist', function(req, res){
+	var query = req.query
+	var city = query.city
+	var page = query.p
+
+	res.json(HomeListData)
 })
 
-app.get('/api/1', function(req, res){
-	res.send('test data 1')
-})
-
-app.get('/api/2', function(req, res){
-	res.json({
-		a: 1,
-		b: '123'
-	})
-})
-
-app.post('/api/post', function(req, res){
-	console.log(req.body)
-	res.send(JSON.stringify(req.body))
+var CityListData = require('./cityList')
+app.get('/api/cityList', function(req, res){
+	res.json(CityListData)
 })
 
 app.listen(8000, function(){

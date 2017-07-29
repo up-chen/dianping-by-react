@@ -1,35 +1,28 @@
 import React from 'react'
 import { render } from 'react-dom'
-import {
-  BrowserRouter as Router,
-  Route,
-  Link
-} from 'react-router-dom'
 import {Provider} from 'react-redux'
 
 // 通用样式
 import './static/css/common.less'
 
-import RouteMap from './router/routerMap'
-import App from './containers/App'
+import RouteMap from './router/routeMap'
+
 import configureStore from './stores/configureStore';
 const store = configureStore();
 let unsubscribe = store.subscribe(() =>
   console.log(store.getState())
 )
 
-import { getData, postData } from './fetch/test.js'
-// import { getData, postData } from './fetch/data.js'
-getData();
-postData();
+
 // 性能测试
 import Perf from 'react-addons-perf'
 if (__DEV__) {
     window.Perf = Perf
 }
+
 render(
 	<Provider store={store}>
-    	<App />
+    	<RouteMap />
     </Provider>,
     document.getElementById('root')
 )

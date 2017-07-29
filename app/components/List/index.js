@@ -1,21 +1,25 @@
 import React from 'react'
+import PureRenderMixin from 'react-addons-pure-render-mixin'
+
+import Item from './Item'
 
 class List extends React.Component {
-	constructor(props) {
-		super(props)
-	}
+    constructor(props) {
+        super(props)
+        
+        this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this)
+    }
 
-	render() {
-		return (
-			<ul style={{marginTop: '10px', fontSize: '20px', lineHeight: '30px'}}>
-				{this.props.todos.map((index) => {
-					return <li 
-								key={index.id} 
-								onClick={()=> this.props.deleteFn(index.id)}>{index.text}</li>
-				})}
-			</ul>
-		)
-	}
+    render() {
+        var data = this.props.data
+        return (
+            <div>
+                {data.map((item, index) => {
+                    return <Item key={index} data={item} />
+                })}
+            </div>
+        )
+    }
 }
 
 export default List

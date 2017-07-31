@@ -1,2 +1,7 @@
-var path = require('path')
-console.log(path.resolve(__dirname, '../app/index.js'))
+require('whatwg-fetch')
+fetch('http://cdn.code.baidu.com/imgs/angular.js.png').then(function(res){
+	return res.json()
+})
+.then(function(res){
+	console.log(res)
+})

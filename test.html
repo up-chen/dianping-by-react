@@ -11,12 +11,15 @@
 	</style>
 </head>
 <body>
-<div class="outer">
-    <div class="div1">1</div>
-    <div class="div2">2</div>
-    <div class="div3">3</div>
-    <img src="http://images2015.cnblogs.com/blog/138012/201610/138012-20161016191713186-495002222.png">
-</div>
+<input id="input" type="text" name="name" value="wer"/>
+
+<script type="text/javascript">
+	var a= document.getElementById('input')
+	
+	a.onblur = function check(e){
+		console.log(e.target.value)
+	}
+</script>
 </p>
 </body>
 </html>

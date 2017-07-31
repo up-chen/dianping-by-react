@@ -7,8 +7,10 @@ var op = require('open-browser-webpack-plugin')
 module.exports = {
 	entry: path.resolve(__dirname, 'app/index.js'),
 	output:{
-		path: path.resolve(__dirname, 'app/index.js'),
-		filename: "dist/bundle.js"
+		path:  path.resolve(__dirname,'dist'),
+		filename: "bundle.js",
+        publicPath: '/dist'
+
 	},
 	resolve: {
         extensions: ['.js','.jsx']
@@ -95,7 +97,10 @@ module.exports = {
           }
         },
         //不跳转，在开发单页应用时非常有用，它依赖于HTML5 history API，如果设置为true，所有的跳转将指向index.html
-        historyApiFallback: true,
+        historyApiFallback: {
+            index: '/dist/index.html'
+        },
+        publicPath: '/dist',
         inline: true,
         hot: true,
         port:3000 

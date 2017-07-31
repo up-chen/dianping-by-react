@@ -1,6 +1,7 @@
 import React from 'react'
 import PureRenderMixin from 'react-addons-pure-render-mixin'
-import ReactSwipe from 'react-swipe';
+import ReactSwipe from 'react-swipe'
+import {Link} from 'react-router-dom'
 
 import './style.less'
 
@@ -29,16 +30,16 @@ class Category extends React.Component {
                 <ReactSwipe swipeOptions={opt}>
                     <div className="carousel-item">
                         <ul className="clear-fix">
-                            <li className="float-left jingdian">景点</li>
-                            <li className="float-left ktv">KTV</li>
-                            <li className="float-left gouwu">购物</li>
-                            <li className="float-left shenghuofuwu">生活服务</li>
-                            <li className="float-left jianshenyundong">健身运动</li>
-                            <li className="float-left meifa">美发</li>
-                            <li className="float-left qinzi">亲子</li>
-                            <li className="float-left xiaochikuaican">小吃快餐</li>
-                            <li className="float-left zizhucan">自助餐</li>
-                            <li className="float-left jiuba">酒吧</li>
+                            <Link to="/search/jingdian"><li className="float-left jingdian">景点</li></Link>
+                            <Link to="/search/ktv"><li className="float-left ktv">KTV</li></Link>
+                            <Link to="/search/gouwu"><li className="float-left gouwu">购物</li></Link>
+                            <Link to="/search/shenghuofuwu"><li className="float-left shenghuofuwu">生活服务</li></Link>
+                            <Link to="/search/jianshenyundong"><li className="float-left jianshenyundong">健身运动</li></Link>
+                            <Link to="/search/meifa"><li className="float-left meifa">美发</li></Link>
+                            <Link to="/search/qinzi"><li className="float-left qinzi">亲子</li></Link>
+                            <Link to="/search/xiaochikuaican"><li className="float-left xiaochikuaican">小吃快餐</li></Link>
+                            <Link to="/search/zizhucan"><li className="float-left zizhucan">自助餐</li></Link>
+                            <Link to="/search/jiuba"><li className="float-left jiuba">酒吧</li></Link>
                         </ul>
                     </div>
                     <div className="carousel-item">

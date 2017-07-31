@@ -3,7 +3,7 @@ import PureRenderMixin from 'react-addons-pure-render-mixin'
 import { connect } from 'react-redux'
 import {bindActionCreators} from 'redux'
 
-import * as actionCreator from '../../actions'
+import * as userinfoActionCreator from '../../actions/userinfo.js'
 import getCityList from '../../fetch/cityList'
 import LocalStore from '../../util/localStore.js'
 import {CITYNAME} from '../../config/localStoreKey.js'
@@ -37,7 +37,7 @@ class City extends React.Component {
         LocalStore.setItem(CITYNAME, newCity)
 
 		//跳转页面
-		window.location = '/'
+		 window.location = '/'
 	} 
 
 	render() {
@@ -78,7 +78,7 @@ function mapStateToProps (state) {
 
 function mapDispatchToProps (dispatch) {
 	return {
-		userInfoActions: bindActionCreators(actionCreator, dispatch)
+		userInfoActions: bindActionCreators(userinfoActionCreator, dispatch)
 	}
 }
 

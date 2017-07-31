@@ -7,7 +7,7 @@ import {
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux'
 
-import * as actionCreator from '../actions'
+import * as userinfoActionCreator from '../actions/userinfo.js'
 import LocalStore from '../util/localStore.js'
 import {CITYNAME} from '../config/localStoreKey.js'
 
@@ -16,6 +16,10 @@ import '../static/css/font.css'
 
 import Home from '../containers/Home'
 import City from '../containers/City'
+import Search from '../containers/Search'
+import Detail from '../containers/Detail'
+import Login from '../containers/Login'
+import User from '../containers/User'
 
 
 class RouteMap extends React.Component { 
@@ -37,6 +41,10 @@ class RouteMap extends React.Component {
 
 					<Route exact path='/' component={Home} />
 					<Route path='/city' component={City} />
+					<Route path='/search/:category/:keyword*' component={Search} />
+					<Route path='/detail/:id' component={Detail} />
+					<Route path='/login/:router*' component={Login} />
+					<Route path='/user/' component={User} />
 				</div>
 			</Router>
 		)
@@ -65,7 +73,7 @@ function mapStateToProps (state) {
 
 function mapDispatchToProps (dispatch) {
 	return {
-		userInfoActions: bindActionCreators(actionCreator, dispatch)
+		userInfoActions: bindActionCreators(userinfoActionCreator, dispatch)
 	}
 
 }

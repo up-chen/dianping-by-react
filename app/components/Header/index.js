@@ -11,9 +11,16 @@ class Header extends React.Component {
 		this.shouldComponentUpdate = PureRenderMixin.shouldComponentUpdate.bind(this)
 		this.clickHandler = this.clickHandler.bind(this)
 	}
+
 	clickHandler() {
-		window.history.back()
+		const backRouter = this.props.backRouter
+        if (backRouter) {
+            this.props.history.push(backRouter)
+        } else {
+            window.history.back()
+        }
 	}
+	
 	render() {
 		return (
 			<div id="common-header">
